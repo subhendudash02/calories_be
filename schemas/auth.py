@@ -6,11 +6,13 @@ from pydantic import BaseModel
 
 # For data creation
 
-class SignUpData(BaseModel):
+class UserData(BaseModel):
     username: str
-    password: str
     email: str
     role: str | None = "user"
+
+class SignUpData(UserData):
+    password: str
     
 class LoginData(BaseModel):
     username: str
@@ -22,9 +24,9 @@ class SignUpResponse(BaseModel):
     username: str
     email: str
     role: str
-    message: str
+    msg: str
 
 class LoginResponse(BaseModel):
-    acceess_token: str
+    access_token: str
     token_type: str
-    message: str
+    msg: str
