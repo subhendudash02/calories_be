@@ -1,5 +1,6 @@
 # User Defined
 calories.db
+secrets.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
