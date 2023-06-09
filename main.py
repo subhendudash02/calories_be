@@ -1,67 +1,40 @@
-from typing import Union
-from fastapi import FastAPI
-import sqlalchemy as db
-from pydantic import BaseModel
-import bcrypt
+from fastapi import FastAPI, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from schemas.auth import SignUpData, SignUpResponse, LoginResponse
+from db.create import user_table, session_table
+from auth.password import hash_password, verify_password
+from db.operations import insert, find_password
+from auth.jwt import create_access_token
+from uuid import uuid4
 
 app = FastAPI()
-engine = db.create_engine("sqlite:///./calories.db", echo=True)
-metadata = db.MetaData()
-
-class UserData(BaseModel):
-    username: str
-    password: str
-    email: str
-    role: str | None = "user"
-
-class LoginData(BaseModel):
-    username: str
-    password: str
-
-user_table = db.Table("user", 
-                      metadata, 
-                      db.Column("username", db.String),
-                      db.Column("password", db.String),
-                      db.Column("email", db.String),
-                      db.Column("role", db.String))
-
-metadata.create_all(engine)
-
-# stmt = db.insert(user_table).values(username="subu", password="subu", email="subu@gmail.com", role="admin")
-# print(stmt)
-
-# with engine.connect() as conn:
-#     result = conn.execute(stmt)
-#     conn.commit()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get("/")
 def sayHello():
-    return {"message": "Hello World"}
+    return {"msg": "Hello World"}
 
-@app.post("/signup/")
-def register(item: UserData):
-    bytes = item.password.encode("utf-8")
-    salt = bcrypt.gensalt()
-    hash = bcrypt.hashpw(bytes, salt)
-    stmt = db.insert(user_table).values(username=item.username, 
-                                        password=hash, 
-                                        email=item.email, 
-                                        role=item.role)
-    
-    with engine.connect() as conn:
-        conn.execute(stmt)
-        conn.commit()
-        return {"message": "User created successfully"}
+@app.post("/signup/", response_model=SignUpResponse)
+def register(item: SignUpData):
+    user_data = item.dict()
+    user_data["password"] = hash_password(item.password)
+    user_data["ID"] = str(uuid4())
+    insert(user_table, user_data)
+    return {"username": item.username, "email": item.email, "role": item.role, "msg": "User created successfully"}
 
-@app.post("/login/")
-def login(item: LoginData):
-    stmt = db.select(user_table).where(user_table.c.username == item.username)
-    hashed_password = "";
-    with engine.connect() as conn:
-        for r in conn.execute(stmt):
-            hashed_password = r[1]
-    
-    if bcrypt.checkpw(item.password.encode("utf-8"), hashed_password):
-        return {"message": "Login successful"}
+@app.post("/login/", response_model=LoginResponse)
+def login(item: OAuth2PasswordRequestForm = Depends()):
+    hashed_password = find_password(item.username);
+
+    if verify_password(item.password, hashed_password):
+        access_token = create_access_token(
+            data={"sub": item.username}
+        )
+        insert_row = {
+            "username": item.username,
+            "jwt_token": access_token  
+        }
+        insert(session_table, insert_row)
+        return {"access_token": access_token, "token_type": "bearer", "msg": "Logged in"}
     else:
-        return {"message": "Login failed"}
+        return {"msg": "Login failed"}
