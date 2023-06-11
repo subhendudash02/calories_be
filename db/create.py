@@ -30,8 +30,17 @@ user_table = db.Table("user",
 session_table = db.Table("sessions", 
                          metadata,
                          db.Column("id", db.Integer, primary_key=True, autoincrement=True),
-                         db.Column("username", db.Integer, db.ForeignKey("user.username")),
+                         db.Column("username", db.String, db.ForeignKey("user.username")),
                          db.Column("jwt_token", db.String, unique=True))
+
+# expected_calorie to store expected calorie intake for each user
+
+expected_calorie_table = db.Table("expected_calories",
+                                  metadata,
+                                  db.Column("ID", db.Integer, primary_key=True, autoincrement=True),
+                                  db.Column("username", db.String, db.ForeignKey("user.username")),
+                                  db.Column("calories", db.Integer, default=30),
+                                  db.Column("date", db.Date))
 
 # table to store food and calorie intake
 def create_calorie_table(table_name: str):

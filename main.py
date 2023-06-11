@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
-from schemas.calories import CalorieData, CalorieResponse
-from db.create import user_table, session_table, create_calorie_table
+from schemas.calories import CalorieData, CalorieResponse, CalorieLimit
+from db.create import user_table, session_table, create_calorie_table, expected_calorie_table
 from auth.password import hash_password, verify_password
 from auth.jwt import create_access_token
 from db.operations import insert, find_password, get_current_user
@@ -55,3 +55,16 @@ def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
 
         insert(get_current_user() + "_calorie", calorie_data)
         return {"payload": calorie_data, "msg": "Food entered successfully"}
+
+@app.post("/calorie_limit/", response_model=CalorieResponse)
+def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
+    if not check:
+        return {"msg": "Not logged in"}
+    else:
+        current_user = get_current_user()
+        goal = req.dict()
+        goal['date'] = get_current_date()
+        goal['username'] = current_user
+
+        insert(expected_calorie_table, goal)
+        return {"payload": goal, "msg": "Limit set successfully"}
