@@ -6,8 +6,8 @@ class CalorieData(BaseModel):
 
 class CalorieLimit(BaseModel):
     calories: int
-
+    date: str | None
+    
 class CalorieResponse(BaseModel):
     payload: dict
     msg: str
-    

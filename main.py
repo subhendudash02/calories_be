@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
 from schemas.calories import CalorieData, CalorieResponse, CalorieLimit
@@ -9,6 +9,7 @@ from db.operations import insert, find_password, get_current_user
 from auth.status import is_logged_in
 from uuid import uuid4
 from utilities.current_date_time import get_current_date, get_current_time
+from datetime import datetime
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -63,7 +64,7 @@ def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
     else:
         current_user = get_current_user()
         goal = req.dict()
-        goal['date'] = get_current_date()
+        goal['date'] = datetime.strptime(req.date, "%d-%m-%y") if req.date else get_current_date()
         goal['username'] = current_user
 
         insert(expected_calorie_table, goal)
