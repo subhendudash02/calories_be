@@ -40,8 +40,8 @@ def create_calorie_table(table_name: str):
                         db.Column("ID", db.Integer, primary_key=True, autoincrement=True),
                         db.Column("food_name", db.String),
                         db.Column("calories", db.Integer),
-                        db.Column("date", db.String),
-                        db.Column("time", db.String))
+                        db.Column("date", db.Date),
+                        db.Column("time", db.Time))
     calorie_table.create(engine)
 
 metadata.create_all(engine)

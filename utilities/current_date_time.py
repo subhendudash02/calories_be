@@ -1,7 +1,7 @@
 from datetime import datetime
 
 def get_current_date():
-    return datetime.now().strftime('%d-%m-%Y')
+    return datetime.date(datetime.now())
 
 def get_current_time():
-    return datetime.now().strftime('%H:%M')
+    return datetime.time(datetime.now())
