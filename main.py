@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
-from db.create import user_table, session_table
+from schemas.calories import CalorieData, CalorieResponse
+from db.create import user_table, session_table, create_calorie_table
 from auth.password import hash_password, verify_password
-from db.operations import insert, find_password
 from auth.jwt import create_access_token
+from db.operations import insert, find_password, get_current_user
+from auth.status import is_logged_in
 from uuid import uuid4
+from utilities.current_date_time import get_current_date, get_current_time
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -19,7 +22,9 @@ def register(item: SignUpData):
     user_data = item.dict()
     user_data["password"] = hash_password(item.password)
     user_data["ID"] = str(uuid4())
+    create_calorie_table(item.username + "_calorie")
     insert(user_table, user_data)
+
     return {"username": item.username, "email": item.email, "role": item.role, "msg": "User created successfully"}
 
 @app.post("/login/", response_model=LoginResponse)
@@ -38,3 +43,15 @@ def login(item: OAuth2PasswordRequestForm = Depends()):
         return {"access_token": access_token, "token_type": "bearer", "msg": "Logged in"}
     else:
         return {"msg": "Login failed"}
+
+@app.post("/enter_calorie/", response_model=CalorieResponse)
+def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
+    if not check:
+        return {"msg": "Not logged in"}
+    else:
+        calorie_data = req.dict()
+        calorie_data['date'] = get_current_date()
+        calorie_data['time'] = get_current_time()
+
+        insert(get_current_user() + "_calorie", calorie_data)
+        return {"payload": calorie_data, "msg": "Food entered successfully"}
