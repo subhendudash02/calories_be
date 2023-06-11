@@ -33,4 +33,15 @@ session_table = db.Table("sessions",
                          db.Column("username", db.Integer, db.ForeignKey("user.username")),
                          db.Column("jwt_token", db.String, unique=True))
 
+# table to store food and calorie intake
+def create_calorie_table(table_name: str):
+    calorie_table = db.Table(table_name,
+                        metadata,
+                        db.Column("ID", db.Integer, primary_key=True, autoincrement=True),
+                        db.Column("food_name", db.String),
+                        db.Column("calories", db.Integer),
+                        db.Column("date", db.String),
+                        db.Column("time", db.String))
+    calorie_table.create(engine)
+
 metadata.create_all(engine)
