@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
 from schemas.calories import CalorieData, CalorieResponse, CalorieLimit
@@ -10,6 +10,7 @@ from auth.status import is_logged_in
 from uuid import uuid4
 from utilities.current_date_time import get_current_date, get_current_time
 from datetime import datetime
+from utilities.get_calories import *
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -53,6 +54,7 @@ def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
         calorie_data = req.dict()
         calorie_data['date'] = get_current_date()
         calorie_data['time'] = get_current_time()
+        calorie_data["calories"] = get_calories(req.food_name) if not calorie_data["calories"] else calorie_data["calories"]
 
         insert(get_current_user() + "_calorie", calorie_data)
         return {"payload": calorie_data, "msg": "Food entered successfully"}

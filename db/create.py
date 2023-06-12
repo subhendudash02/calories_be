@@ -4,7 +4,7 @@ This file contains creation of sqlite database and its necesary tables.
 
 import sqlalchemy as db
 
-engine = db.create_engine("sqlite:///./calories.db", echo=True)
+engine = db.create_engine("sqlite:///./calories.db")
 metadata = db.MetaData()
 
 # User table to store user credentials and its role

@@ -6,7 +6,7 @@ import sqlalchemy as db
 from db.create import user_table, session_table
 from auth.jwt import get_username
 
-engine = db.create_engine("sqlite:///./calories.db", echo=True)
+engine = db.create_engine("sqlite:///./calories.db")
 meta = db.MetaData()
 
 def insert(table_name: db.Table | str, values: dict):

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 class CalorieData(BaseModel):
     food_name: str
-    calories: int
+    calories: int | None
 
 class CalorieLimit(BaseModel):
     calories: int
