@@ -11,3 +11,4 @@ class CalorieLimit(BaseModel):
 class CalorieResponse(BaseModel):
     payload: dict
     msg: str
+    goal_reached: bool | None

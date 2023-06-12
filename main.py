@@ -5,12 +5,13 @@ from schemas.calories import CalorieData, CalorieResponse, CalorieLimit
 from db.create import user_table, session_table, create_calorie_table, expected_calorie_table
 from auth.password import hash_password, verify_password
 from auth.jwt import create_access_token
-from db.operations import insert, find_password, get_current_user
+from db.operations import insert, find_password, get_current_user, get_calories_goal, count_total_calories
 from auth.status import is_logged_in
 from uuid import uuid4
 from utilities.current_date_time import get_current_date, get_current_time
 from datetime import datetime
 from utilities.get_calories import *
+from utilities.check_goal import check_goal
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -46,18 +47,21 @@ def login(item: OAuth2PasswordRequestForm = Depends()):
     else:
         return {"msg": "Login failed"}
 
-@app.post("/enter_calorie/", response_model=CalorieResponse)
+@app.post("/enter_calorie/")
 def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
     if not check:
         return {"msg": "Not logged in"}
     else:
+        calorie_user_table = get_current_user() + "_calorie"
+
         calorie_data = req.dict()
         calorie_data['date'] = get_current_date()
         calorie_data['time'] = get_current_time()
         calorie_data["calories"] = get_calories(req.food_name) if not calorie_data["calories"] else calorie_data["calories"]
+        insert(calorie_user_table, calorie_data)
+        goal_reached = check_goal(calorie_user_table, calorie_data["date"], None)
 
-        insert(get_current_user() + "_calorie", calorie_data)
-        return {"payload": calorie_data, "msg": "Food entered successfully"}
+        return {"payload": calorie_data, "msg": "Food entered successfully", "goal_reached": goal_reached}
 
 @app.post("/calorie_limit/", response_model=CalorieResponse)
 def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
