@@ -1,5 +1,6 @@
 import requests
 from configparser import ConfigParser
+import json
 
 config = ConfigParser()
 config.read('./secrets.cfg')
@@ -10,8 +11,8 @@ x_app_key = config['nutritionix']['API_KEY']
 headers = {
     'Accept':'application/json',
     'Content-Type': 'application/json',
-    "x-app-id": x_app_id,
-    "x-app-key": x_app_key,
+    "x-app-id": str(x_app_id),
+    "x-app-key": str(x_app_key),
 }
 
 
