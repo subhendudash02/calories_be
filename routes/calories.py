@@ -14,24 +14,28 @@ from utilities.check_goal import check_goal
 
 cal_router = APIRouter(prefix='/calories', tags=['calories'])
 
-@cal_router.post("/entry/", response_model=CalorieResponse)
-def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
+@cal_router.post("/entry/")
+def enter_food(req: CalorieData, check: bool = Depends(is_logged_in), check_role: int = Depends(check_role)):
+    if check_role == 0 and req.username:
+        return {"msg": "You are not an admin"}
     if not check:
         return {"msg": "Not logged in"}
-    else:
-        calorie_user_table = get_current_user() + "_calorie"
+    
+    calorie_user_table = req.username+"_calorie" if req.username else get_current_user() + "_calorie"
+    calorie_data = req.dict()
+    calorie_data['date'] = get_current_date()
+    calorie_data['time'] = get_current_time()
+    calorie_data["calories"] = get_calories(req.food_name) if not calorie_data["calories"] else calorie_data["calories"]
+    calorie_data.pop("username")
+    insert(calorie_user_table, calorie_data)
+    goal_reached = check_goal(calorie_user_table, calorie_data["date"], None)
 
-        calorie_data = req.dict()
-        calorie_data['date'] = get_current_date()
-        calorie_data['time'] = get_current_time()
-        calorie_data["calories"] = get_calories(req.food_name) if not calorie_data["calories"] else calorie_data["calories"]
-        insert(calorie_user_table, calorie_data)
-        goal_reached = check_goal(calorie_user_table, calorie_data["date"], None)
+    return {"payload": calorie_data, "msg": "Food entered successfully", "goal_reached": goal_reached}
 
-        return {"payload": calorie_data, "msg": "Food entered successfully", "goal_reached": goal_reached}
-
-@cal_router.get("/list/")
-def list_foods(check: bool = Depends(is_logged_in)):
+@cal_router.get("/list")
+def list_foods(username: str = None, check: bool = Depends(is_logged_in), check_role: int = Depends(check_role)):
+    if check_role == 0 and username:
+        return {"msg": "user can't enter/update other's goal"}
     if not check:
         return {"msg": "Not logged in"}
     else:
@@ -39,11 +43,13 @@ def list_foods(check: bool = Depends(is_logged_in)):
         return {"msg": get_list(calorie_user_table)}
 
 @cal_router.post("/goal/")
-def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
+def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in), check_role: int = Depends(check_role)):
+    if check_role == 0 and req.username:
+        return {"msg": "user can't enter/update other's goal"}
     if not check:
         return {"msg": "Not logged in"}
     else:
-        current_user = get_current_user()
+        current_user = req.username if req.username else get_current_user()
         goal = req.dict()
         goal['date'] = datetime.strptime(req.date, "%d-%m-%y") if req.date else get_current_date()
         goal['username'] = current_user
@@ -54,11 +60,13 @@ def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
             update(expected_calorie_table, req.calories, current_user)
         return {"payload": goal, "msg": "Limit set successfully"}
 
-@cal_router.get("/goal/")
-def get_limit(check: bool = Depends(is_logged_in)):
+@cal_router.get("/goal")
+def get_limit(username: str = None, check: bool = Depends(is_logged_in), check_role: int = Depends(check_role)):
+    if check_role == 0 and username:
+        return {"msg": "user can't enter/update other's goal"}
     if not check:
         return {"msg": "Not logged in"}
     else:
-        current_user = get_current_user()
+        current_user = username if username else get_current_user()
         res = get_goal(expected_calorie_table, current_user)
         return {"calories": res}

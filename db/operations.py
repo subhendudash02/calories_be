@@ -125,5 +125,20 @@ def get_goal(table_name: db.Table | str, username: str):
     with engine.connect() as conn:
         for r in conn.execute(get_goal):
             result = r[2]
-    
+
     return result
+
+def check_role():
+    current_user = get_current_user()
+    row = db.select(user_table).where(user_table.c.username == current_user)
+    
+    role = 0
+
+    with engine.connect() as conn:
+        for r in conn.execute(row):
+            if r[4] == "admin":
+                role = 2
+            elif r[4] == "manager":
+                role = 1
+    
+    return role
