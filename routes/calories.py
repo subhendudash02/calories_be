@@ -3,7 +3,7 @@ Routes for inputting calories and daily goals
 """
 
 from fastapi import APIRouter, Depends
-from schemas.calories import CalorieData, CalorieResponse, CalorieLimit
+from schemas.calories import CalorieData, CalorieGoal, CalorieLimit, CalorieResponse
 from db.create import expected_calorie_table
 from db.operations import insert, get_current_user
 from auth.status import is_logged_in
@@ -14,7 +14,7 @@ from utilities.check_goal import check_goal
 
 cal_router = APIRouter(prefix='/calories', tags=['calories'])
 
-@cal_router.post("/entry/")
+@cal_router.post("/entry/", response_model=CalorieResponse)
 def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
     if not check:
         return {"msg": "Not logged in"}
@@ -30,7 +30,7 @@ def enter_food(req: CalorieData, check: bool = Depends(is_logged_in)):
 
         return {"payload": calorie_data, "msg": "Food entered successfully", "goal_reached": goal_reached}
 
-@cal_router.post("/set_goal/", response_model=CalorieResponse)
+@cal_router.post("/set_goal/", response_model=CalorieGoal)
 def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in)):
     if not check:
         return {"msg": "Not logged in"}

@@ -8,7 +8,9 @@ class CalorieLimit(BaseModel):
     calories: int
     date: str | None
     
-class CalorieResponse(BaseModel):
+class CalorieGoal(BaseModel):
     payload: dict
     msg: str
+
+class CalorieResponse(CalorieGoal):
     goal_reached: bool | None
