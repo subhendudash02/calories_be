@@ -18,6 +18,26 @@ def insert(table_name: db.Table | str, values: dict):
         conn.execute(ins)
         conn.commit()
 
+def update(table_name: db.Table | str, value: int, username: str):
+    if type(table_name) == str:
+        table_name = db.Table(table_name, meta, autoload_with=engine)
+    up = db.update(table_name).where(table_name.c.username == username).values(calories=value)
+
+    with engine.connect() as conn:
+        conn.execute(up)
+        conn.commit()
+
+def exists(table_name: db.Table | str, username: str):
+    if type(table_name) == str:
+        table_name = db.Table(table_name, meta, autoload_with=engine)
+    
+    valid_row = db.select(table_name).where(table_name.c.username == username)
+    row = None
+    with engine.connect() as conn:
+        for r in conn.execute(valid_row):
+           row = r
+    return row
+
 def find_password(username: str) -> str:
     valid_row = db.select(user_table).where(user_table.c.username == username)
 
@@ -77,3 +97,33 @@ def count_total_calories(table_name: db.Table | str, from_date: str, to_date: st
             sum += r[2]
     
     return sum
+
+def get_list(table_name: db.Table | str):
+    if type(table_name) == str:
+        table_name = db.Table(table_name, meta, autoload_with=engine)
+    
+    get_all = db.select(table_name)
+    result = []
+
+    with engine.connect() as conn:
+        for r in conn.execute(get_all):
+            result.append({
+                    "id": r[0],
+                    "food_name": r[1],
+                    "calories": r[2]
+                })
+    
+    return result
+
+def get_goal(table_name: db.Table | str, username: str):
+    if type(table_name) == str:
+        table_name = db.Table(table_name, meta, autoload_with=engine)
+    
+    get_goal = db.select(table_name).where(table_name.c.username == username)
+    result = None
+
+    with engine.connect() as conn:
+        for r in conn.execute(get_goal):
+            result = r[2]
+    
+    return result

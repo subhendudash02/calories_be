@@ -5,8 +5,8 @@ Routes for all authentication related endpoints
 from fastapi import APIRouter, Depends
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
 from auth.password import hash_password, verify_password
-from db.create import user_table, session_table, create_calorie_table, expected_calorie_table
-from db.operations import insert, find_password, get_current_user, get_calories_goal, count_total_calories
+from db.create import user_table, session_table, create_calorie_table
+from db.operations import insert, find_password
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth.jwt import create_access_token
 from uuid import uuid4
