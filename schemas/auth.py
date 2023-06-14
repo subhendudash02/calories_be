@@ -28,5 +28,4 @@ class SignUpResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
-    token_type: str
     msg: str

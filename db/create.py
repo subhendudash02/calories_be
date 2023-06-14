@@ -14,7 +14,7 @@ user_table = db.Table("user",
                       db.Column("ID", db.String, primary_key=True, unique=True),
                       db.Column("username", db.String, unique=True),
                       db.Column("password", db.String),
-                      db.Column("email", db.String),
+                      db.Column("email", db.String, unique=True),
                       db.Column("role", db.String))
 
 # # Food table to store food items and its calories
