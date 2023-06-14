@@ -16,3 +16,6 @@ class CalorieGoal(BaseModel):
 
 class CalorieResponse(CalorieGoal):
     goal_reached: bool | None
+
+class GetCalorieResponse(BaseModel):
+    msg: int | list

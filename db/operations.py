@@ -50,10 +50,13 @@ def find_password(username: str) -> str:
 def get_token() -> str:
     valid_row = db.select(session_table)
 
+    token = None
     with engine.connect() as conn:
         for r in conn.execute(valid_row):
             token = r[2]
-    
+    if not token:
+        return None
+
     return token
 
 def delete_session():
@@ -66,9 +69,13 @@ def delete_session():
 def get_current_user():
     session = db.select(session_table)
 
+    token = None
     with engine.connect() as conn:
         for r in conn.execute(session):
             token = r[2]
+    
+    if not token:
+        return None
     
     return get_username(token)
 
@@ -119,7 +126,7 @@ def get_goal(table_name: db.Table | str, username: str):
         table_name = db.Table(table_name, meta, autoload_with=engine)
     
     get_goal = db.select(table_name).where(table_name.c.username == username)
-    result = None
+    result = 0
 
     with engine.connect() as conn:
         for r in conn.execute(get_goal):
