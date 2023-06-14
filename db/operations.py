@@ -72,8 +72,7 @@ def get_current_user():
     
     return get_username(token)
 
-def get_calories_goal(from_date: str, to_date: str | None):
-    username = get_current_user()
+def get_calories_goal(username: str, from_date: str, to_date: str | None):
     if not to_date:
         get_calorie = db.select(expected_calorie_table).where(db.and_(expected_calorie_table.c.username == username, expected_calorie_table.c.date == from_date))
     calories = None
@@ -128,8 +127,8 @@ def get_goal(table_name: db.Table | str, username: str):
 
     return result
 
-def check_role():
-    current_user = get_current_user()
+def check_role(user: str = None):
+    current_user = user if user else get_current_user()
     row = db.select(user_table).where(user_table.c.username == current_user)
     
     role = 0
