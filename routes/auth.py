@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from schemas.auth import SignUpData, SignUpResponse, LoginResponse
 from schemas.error import ErrorResponse
 from auth.password import hash_password, verify_password
-from db.create import user_table, session_table, create_calorie_table
+from db.models import user_table, session_table, create_calorie_table
 from db.operations import insert, find_password, delete_session
 from db.auth import user_exists
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm

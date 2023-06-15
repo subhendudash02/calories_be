@@ -3,7 +3,7 @@ This file contains all operations required in the database.
 """
 
 import sqlalchemy as db
-from db.create import user_table, session_table, expected_calorie_table
+from db.models import user_table, session_table, expected_calorie_table
 from auth.jwt import get_username
 
 engine = db.create_engine("sqlite:///./calories.db")

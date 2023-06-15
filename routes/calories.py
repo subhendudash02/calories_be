@@ -5,7 +5,7 @@ Routes for inputting calories and daily goals
 from fastapi import APIRouter, Depends, HTTPException
 from schemas.calories import CalorieData, CalorieGoal, CalorieLimit, CalorieResponse, GetCalorieResponse
 from schemas.error import ErrorResponse
-from db.create import expected_calorie_table
+from db.models import expected_calorie_table
 from db.operations import *
 from auth.status import is_logged_in
 from utilities.current_date_time import get_current_date, get_current_time
