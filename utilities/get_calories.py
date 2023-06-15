@@ -1,6 +1,5 @@
 import requests
 from configparser import ConfigParser
-import json
 
 config = ConfigParser()
 config.read('./secrets.cfg')

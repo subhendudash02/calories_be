@@ -3,13 +3,15 @@ Routes for inputting calories and daily goals
 """
 
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.calories import CalorieData, CalorieGoal, CalorieLimit, CalorieResponse, GetCalorieResponse
+from schemas.calories import *
 from schemas.error import ErrorResponse
 from db.models import expected_calorie_table
 from db.operations import *
+from db.auth import *
 from auth.status import is_logged_in
-from utilities.current_date_time import get_current_date, get_current_time
+from utilities.current_date_time import *
 from datetime import datetime
+from utilities.roles import *
 from utilities.get_calories import *
 from utilities.check_goal import check_goal
 
@@ -80,7 +82,7 @@ def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in), role: int 
     if not exists(expected_calorie_table, current_user):
         insert(expected_calorie_table, goal)
     else:
-        update(expected_calorie_table, req.calories, current_user)
+        update(expected_calorie_table, {"calories": req.calories}, current_user)
 
     return {"payload": goal, "msg": "Limit set successfully"}
 
