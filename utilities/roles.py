@@ -12,10 +12,11 @@ from db.auth import get_current_user
 
 roles: list = ["user", "manager", "admin"]
 
+
 def check_role(user: str = None):
     current_user = user if user else get_current_user()
     row = db.select(user_table).where(user_table.c.username == current_user)
-    
+
     role = 0
 
     with engine.connect() as conn:
@@ -24,5 +25,5 @@ def check_role(user: str = None):
                 role = 2
             elif r[4] == "manager":
                 role = 1
-    
+
     return role

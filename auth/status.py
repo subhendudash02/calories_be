@@ -6,6 +6,7 @@ from db.auth import get_token
 from auth.jwt import is_token_valid
 from db.auth import delete_session
 
+
 def is_logged_in() -> bool:
     jwt_token = get_token()
     if not jwt_token:

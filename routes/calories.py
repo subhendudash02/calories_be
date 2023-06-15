@@ -4,7 +4,6 @@ Routes for inputting calories and daily goals
 
 from fastapi import APIRouter, Depends, HTTPException
 from schemas.calories import *
-from schemas.error import ErrorResponse
 from db.models import expected_calorie_table
 from db.operations import *
 from db.auth import *
@@ -15,47 +14,85 @@ from utilities.roles import *
 from utilities.get_calories import *
 from utilities.check_goal import check_goal
 
-cal_router = APIRouter(prefix='/calories', tags=['calories'])
+cal_router = APIRouter(prefix="/calories", tags=["calories"])
 
-@cal_router.post("/entry/", 
-                 response_model=CalorieResponse,
-                 responses={201: {"model": CalorieResponse}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def enter_food(req: CalorieData, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+
+@cal_router.post(
+    "/entry/",
+    response_model=CalorieResponse,
+    responses={
+        201: {"model": CalorieResponse},
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+    },
+)
+def enter_food(
+    req: CalorieData,
+    check: bool = Depends(is_logged_in),
+    role: int = Depends(check_role),
+):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(req.username) == 2:
-        raise HTTPException(status_code=400, detail="user manager can't access admin's records")
+        raise HTTPException(
+            status_code=400, detail="user manager can't access admin's records"
+        )
     if role == 0 and req.username:
         raise HTTPException(status_code=400, detail="User can't access other records")
 
     current_user = req.username if req.username else get_current_user()
-    calorie_user_table = current_user+"_calorie"
+    calorie_user_table = current_user + "_calorie"
     calorie_data = req.dict()
 
-    calorie_data['date'] = get_current_date()
-    calorie_data['time'] = get_current_time()
-    calorie_data["calories"] = get_calories(req.food_name) if not calorie_data["calories"] else calorie_data["calories"]
+    calorie_data["date"] = get_current_date()
+    calorie_data["time"] = get_current_time()
+    calorie_data["calories"] = (
+        get_calories(req.food_name)
+        if not calorie_data["calories"]
+        else calorie_data["calories"]
+    )
     calorie_data.pop("username")
 
     insert(calorie_user_table, calorie_data)
-    goal_reached = check_goal(calorie_user_table, current_user, calorie_data["date"], None)
+    goal_reached = check_goal(
+        calorie_user_table, current_user, calorie_data["date"], None
+    )
 
-    return {"payload": calorie_data, "msg": "Food entered successfully", "goal_reached": goal_reached}
+    return {
+        "payload": calorie_data,
+        "msg": "Food entered successfully",
+        "goal_reached": goal_reached,
+    }
 
-@cal_router.get("/list", 
-                response_model=GetCalorieResponse,
-                responses={200: {"model": GetCalorieResponse}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def list_foods(username: str = None, from_date: str = None, to_date: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+
+@cal_router.get(
+    "/list",
+    response_model=GetCalorieResponse,
+    responses={
+        200: {"model": GetCalorieResponse},
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+    },
+)
+def list_foods(
+    username: str = None,
+    from_date: str = None,
+    to_date: str = None,
+    check: bool = Depends(is_logged_in),
+    role: int = Depends(check_role),
+):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
-        raise HTTPException(status_code=400, detail="user manager can't access admin's records")
+        raise HTTPException(
+            status_code=400, detail="user manager can't access admin's records"
+        )
     if role == 0 and username:
         raise HTTPException(status_code=400, detail="User can't access other records")
 
     current_user = username if username else get_current_user()
     calorie_user_table = current_user + "_calorie"
-    
+
     if not from_date:
         from_date = get_current_date()
 
@@ -63,21 +100,36 @@ def list_foods(username: str = None, from_date: str = None, to_date: str = None,
 
     return {"msg": food_list}
 
-@cal_router.post("/goal/",
-                 response_model=CalorieGoal,
-                 responses={201: {"model": CalorieGoal}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+
+@cal_router.post(
+    "/goal/",
+    response_model=CalorieGoal,
+    responses={
+        201: {"model": CalorieGoal},
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+    },
+)
+def set_limit(
+    req: CalorieLimit,
+    check: bool = Depends(is_logged_in),
+    role: int = Depends(check_role),
+):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(req.username) == 2:
-        raise HTTPException(status_code=400, detail="user manager can't access admin's records")
+        raise HTTPException(
+            status_code=400, detail="user manager can't access admin's records"
+        )
     if role == 0 and req.username:
         raise HTTPException(status_code=400, detail="User can't access other records")
-    
+
     current_user = req.username if req.username else get_current_user()
     goal = req.dict()
-    goal['date'] = datetime.strptime(req.date, "%d-%m-%y") if req.date else get_current_date()
-    goal['username'] = current_user
+    goal["date"] = (
+        datetime.strptime(req.date, "%d-%m-%y") if req.date else get_current_date()
+    )
+    goal["username"] = current_user
 
     if not exists(expected_calorie_table, current_user):
         insert(expected_calorie_table, goal)
@@ -86,26 +138,42 @@ def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in), role: int 
 
     return {"payload": goal, "msg": "Limit set successfully"}
 
-@cal_router.get("/goal",
-                response_model=GetCalorieResponse,
-                responses={200: {"model": GetCalorieResponse}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def get_limit(params: str = None, username: str = None, from_date: str = None, to_date: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+
+@cal_router.get(
+    "/goal",
+    response_model=GetCalorieResponse,
+    responses={
+        200: {"model": GetCalorieResponse},
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+    },
+)
+def get_limit(
+    params: str = None,
+    username: str = None,
+    from_date: str = None,
+    to_date: str = None,
+    check: bool = Depends(is_logged_in),
+    role: int = Depends(check_role),
+):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
-        raise HTTPException(status_code=400, detail="user manager can't access admin's records")
+        raise HTTPException(
+            status_code=400, detail="user manager can't access admin's records"
+        )
     if role == 0 and username:
         raise HTTPException(status_code=400, detail="User can't access other records")
-    
+
     current_user = username if username else get_current_user()
 
     if not from_date:
         from_date = get_current_date()
 
     res = get_calories_goal(current_user, from_date, to_date)
-    
+
     if params == "status":
-        res2 = check_goal(current_user+"_calorie", current_user, from_date, to_date)
+        res2 = check_goal(current_user + "_calorie", current_user, from_date, to_date)
         return {"msg": res2}
 
     return {"msg": res}
