@@ -82,10 +82,11 @@ def get_current_user():
 def get_calories_goal(username: str, from_date: str, to_date: str | None):
     if not to_date:
         get_calorie = db.select(expected_calorie_table).where(db.and_(expected_calorie_table.c.username == username, expected_calorie_table.c.date == from_date))
-    calories = None
+    
+    calories = 0
     with engine.connect() as conn:
         for r in conn.execute(get_calorie):
-            calories = r[2]
+            calories += r[2]
     
     return calories
 
@@ -104,11 +105,14 @@ def count_total_calories(table_name: db.Table | str, from_date: str, to_date: st
     
     return sum
 
-def get_list(table_name: db.Table | str):
+def get_list(table_name: db.Table | str, from_date: str, to_date: str = None):
     if type(table_name) == str:
         table_name = db.Table(table_name, meta, autoload_with=engine)
     
-    get_all = db.select(table_name)
+    if not to_date:
+        get_all = db.select(table_name).filter(table_name.c.date == from_date)
+    else:
+        get_all = db.select(table_name).filter(db.and_(table_name.c.date >= from_date, table_name.c.date <= to_date))
     result = []
 
     with engine.connect() as conn:
@@ -119,19 +123,6 @@ def get_list(table_name: db.Table | str):
                     "calories": r[2]
                 })
     
-    return result
-
-def get_goal(table_name: db.Table | str, username: str):
-    if type(table_name) == str:
-        table_name = db.Table(table_name, meta, autoload_with=engine)
-    
-    get_goal = db.select(table_name).where(table_name.c.username == username)
-    result = 0
-
-    with engine.connect() as conn:
-        for r in conn.execute(get_goal):
-            result = r[2]
-
     return result
 
 def check_role(user: str = None):

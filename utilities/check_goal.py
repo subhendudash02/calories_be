@@ -8,8 +8,6 @@ def check_goal(table_name: str, username: str, from_date: str, to_date: str | No
     todays_goal = get_calories_goal(username, from_date, to_date)
     reached_so_far = count_total_calories(table_name, from_date, to_date)
 
-    print(todays_goal, reached_so_far)
-
     if not todays_goal:
         goal_reached = None    
     elif (todays_goal <= reached_so_far):

@@ -43,7 +43,7 @@ def enter_food(req: CalorieData, check: bool = Depends(is_logged_in), role: int 
 @cal_router.get("/list", 
                 response_model=GetCalorieResponse,
                 responses={200: {"model": GetCalorieResponse}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def list_foods(username: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+def list_foods(username: str = None, from_date: str = None, to_date: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
@@ -53,7 +53,13 @@ def list_foods(username: str = None, check: bool = Depends(is_logged_in), role: 
 
     current_user = username if username else get_current_user()
     calorie_user_table = current_user + "_calorie"
-    return {"msg": get_list(calorie_user_table)}
+    
+    if not from_date:
+        from_date = get_current_date()
+
+    food_list = get_list(calorie_user_table, from_date, to_date)
+
+    return {"msg": food_list}
 
 @cal_router.post("/goal/",
                  response_model=CalorieGoal,
@@ -75,12 +81,13 @@ def set_limit(req: CalorieLimit, check: bool = Depends(is_logged_in), role: int 
         insert(expected_calorie_table, goal)
     else:
         update(expected_calorie_table, req.calories, current_user)
+
     return {"payload": goal, "msg": "Limit set successfully"}
 
 @cal_router.get("/goal",
                 response_model=GetCalorieResponse,
                 responses={200: {"model": GetCalorieResponse}, 400: {"model": ErrorResponse}, 401: {"model": ErrorResponse}})
-def get_limit(username: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+def get_limit(params: str = None, username: str = None, from_date: str = None, to_date: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
@@ -89,5 +96,14 @@ def get_limit(username: str = None, check: bool = Depends(is_logged_in), role: i
         raise HTTPException(status_code=400, detail="User can't access other records")
     
     current_user = username if username else get_current_user()
-    res = get_goal(expected_calorie_table, current_user)
+
+    if not from_date:
+        from_date = get_current_date()
+
+    res = get_calories_goal(current_user, from_date, to_date)
+    
+    if params == "status":
+        res2 = check_goal(current_user+"_calorie", current_user, from_date, to_date)
+        return {"msg": res2}
+
     return {"msg": res}

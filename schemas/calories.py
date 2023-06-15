@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Any
 
 class CalorieData(BaseModel):
     username: str | None
@@ -18,4 +19,4 @@ class CalorieResponse(CalorieGoal):
     goal_reached: bool | None
 
 class GetCalorieResponse(BaseModel):
-    msg: int | list
+    msg: Any
