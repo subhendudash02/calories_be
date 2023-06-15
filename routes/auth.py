@@ -7,7 +7,7 @@ from schemas.auth import SignUpData, SignUpResponse, LoginResponse
 from schemas.error import ErrorResponse
 from auth.password import hash_password, verify_password
 from db.create import user_table, session_table, create_calorie_table
-from db.operations import insert, find_password
+from db.operations import insert, find_password, delete_session
 from db.auth import user_exists
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from auth.jwt import create_access_token
@@ -52,3 +52,8 @@ def login(item: OAuth2PasswordRequestForm = Depends()):
         return {"access_token": access_token, "msg": "Logged in"}
     else:
         return {"detail": "Invalid credentials / user doesn't exist"}
+
+@auth_router.post("/logout/")
+def logout():
+    delete_session()
+    return {"msg": "Logged out"}
