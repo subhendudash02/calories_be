@@ -13,4 +13,4 @@ def sayHello():
 
 app.include_router(auth.auth_router)
 app.include_router(calories.cal_router)
-# app.include_router(admin.admin_route)
+app.include_router(admin.admin_route)
