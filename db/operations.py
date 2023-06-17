@@ -28,6 +28,18 @@ def update(table_name: db.Table | str, values: dict, username: str):
         conn.execute(up)
         conn.commit()
 
+def delete(table_name: db.Table | str, username: str = None):
+    if type(table_name) == str:
+        table_name = db.Table(table_name, meta, autoload_with=engine)
+    
+    if not username:
+        table_name.drop(engine)
+    else:
+        delete = db.delete(table_name).where(table_name.c.username == username)
+    
+        with engine.connect() as conn:
+            conn.execute(delete)
+            conn.commit()
 
 # checks whether the username exists in a table
 def exists(table_name: db.Table | str, username: str):
