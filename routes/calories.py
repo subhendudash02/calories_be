@@ -22,8 +22,8 @@ cal_router = APIRouter(prefix="/calories", tags=["calories"])
     response_model=CalorieResponse,
     responses={
         201: {"model": CalorieResponse},
-        400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
     },
 )
 def enter_food(
@@ -35,10 +35,10 @@ def enter_food(
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(req.username) == 2:
         raise HTTPException(
-            status_code=400, detail="user manager can't access admin's records"
+            status_code=403, detail="user manager can't access admin's records"
         )
     if role == 0 and req.username:
-        raise HTTPException(status_code=400, detail="User can't access other records")
+        raise HTTPException(status_code=403, detail="User can't access other records")
 
     current_user = req.username if req.username else get_current_user()
     calorie_user_table = current_user + "_calorie"
@@ -64,31 +64,42 @@ def enter_food(
         "goal_reached": goal_reached,
     }
 
-@cal_router.delete("/entry/{food_id}")
-def delete_food(food_id: int, username: str = None, check: bool = Depends(is_logged_in), role: int = Depends(check_role)):
+
+@cal_router.delete("/entry/{food_id}", response_model=GetCalorieResponse, responses={
+        201: {"model": CalorieResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+    },)
+def delete_food(
+    food_id: int,
+    username: str = None,
+    check: bool = Depends(is_logged_in),
+    role: int = Depends(check_role),
+):
     if not check:
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
         raise HTTPException(
-            status_code=400, detail="user manager can't access admin's records"
+            status_code=403, detail="user manager can't access admin's records"
         )
     if role == 0 and username:
-        raise HTTPException(status_code=400, detail="User can't access other records")
+        raise HTTPException(status_code=403, detail="User can't access other records")
 
     current_user = username if username else get_current_user()
     calorie_user_table = current_user + "_calorie"
 
-    remove_food(calorie_user_table, food_id);
+    remove_food(calorie_user_table, food_id)
 
     return {"msg": "removed successfully"}
+
 
 @cal_router.get(
     "/list",
     response_model=GetCalorieResponse,
     responses={
         200: {"model": GetCalorieResponse},
-        400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
     },
 )
 def list_foods(
@@ -102,10 +113,10 @@ def list_foods(
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
         raise HTTPException(
-            status_code=400, detail="user manager can't access admin's records"
+            status_code=403, detail="user manager can't access admin's records"
         )
     if role == 0 and username:
-        raise HTTPException(status_code=400, detail="User can't access other records")
+        raise HTTPException(status_code=403, detail="User can't access other records")
 
     current_user = username if username else get_current_user()
     calorie_user_table = current_user + "_calorie"
@@ -123,8 +134,8 @@ def list_foods(
     response_model=CalorieGoal,
     responses={
         201: {"model": CalorieGoal},
-        400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
     },
 )
 def set_limit(
@@ -136,10 +147,10 @@ def set_limit(
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(req.username) == 2:
         raise HTTPException(
-            status_code=400, detail="user manager can't access admin's records"
+            status_code=403, detail="user manager can't access admin's records"
         )
     if role == 0 and req.username:
-        raise HTTPException(status_code=400, detail="User can't access other records")
+        raise HTTPException(status_code=403, detail="User can't access other records")
 
     current_user = req.username if req.username else get_current_user()
     goal = req.dict()
@@ -161,8 +172,8 @@ def set_limit(
     response_model=GetCalorieResponse,
     responses={
         200: {"model": GetCalorieResponse},
-        400: {"model": ErrorResponse},
         401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
     },
 )
 def get_limit(
@@ -177,10 +188,10 @@ def get_limit(
         raise HTTPException(status_code=401, detail="Not logged in")
     if role == 1 and check_role(username) == 2:
         raise HTTPException(
-            status_code=400, detail="user manager can't access admin's records"
+            status_code=403, detail="user manager can't access admin's records"
         )
     if role == 0 and username:
-        raise HTTPException(status_code=400, detail="User can't access other records")
+        raise HTTPException(status_code=403, detail="User can't access other records")
 
     current_user = username if username else get_current_user()
 

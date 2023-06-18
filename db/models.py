@@ -14,7 +14,7 @@ user_table = db.Table(
     db.Column("username", db.String, unique=True),
     db.Column("password", db.String),
     db.Column("email", db.String, unique=True),
-    db.Column("role", db.String)
+    db.Column("role", db.String),
 )
 
 # Session table to store user sessions
@@ -49,7 +49,7 @@ def create_calorie_table(table_name: str):
         db.Column("calories", db.Integer),
         db.Column("date", db.Date),
         db.Column("time", db.Time),
-        extend_existing=True
+        extend_existing=True,
     )
     calorie_table.create(engine)
 
