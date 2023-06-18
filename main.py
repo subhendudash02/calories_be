@@ -8,10 +8,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get("/")
 def sayHello():
-    return {
-        "msg": "Hello from calories API",
-        "made_by": "Subhendu Dash"    
-    }
+    return {"msg": "Hello from calories API", "made_by": "Subhendu Dash"}
 
 
 app.include_router(auth.auth_router)

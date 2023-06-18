@@ -65,11 +65,15 @@ def enter_food(
     }
 
 
-@cal_router.delete("/entry/{food_id}", response_model=GetCalorieResponse, responses={
+@cal_router.delete(
+    "/entry/{food_id}",
+    response_model=GetCalorieResponse,
+    responses={
         201: {"model": CalorieResponse},
         401: {"model": ErrorResponse},
         403: {"model": ErrorResponse},
-    },)
+    },
+)
 def delete_food(
     food_id: int,
     username: str = None,
