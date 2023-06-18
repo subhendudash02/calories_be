@@ -27,18 +27,48 @@ There are three roles
 
 *Note*: For simplicity, the roles are depicted by integers. 0 stands for user, 1 for manager, 2 for admin. Refer `utilities/roles` for more.
 
+# Database
+
+- `user`: stores athe user data with the following fields
+    - `ID`: unique UUID for each user
+    - `username`: username of the user
+    - `password`: hashed password of the user
+    - `email`: email of the user
+    - `role`: role of the user (user, manager, admin)
+
+- `sessions`: stores the session with the following fields
+    - `id`: unique id of the session
+    - `jwt_token`: jwt token of the session
+    - `username`: user signed in
+
+- `expected_calories`: stores the daily calorie goal of the user with the following fields
+    - `ID`: unique id of the goal
+    - `username`: username of the user
+    - `calories`: daily calorie goal of the user
+    - `date`: date of the goal
+
+- `<username>_calorie`: stores the list of food consumed along with the date and time with the following fields
+    - `ID`: unique id of the food
+    - `food_name`: name of the food
+    - `calories`: calories of the food
+    - `date`: date when the food was consumed
+    - `time`: time when the food was consumed
+
+This table is created after signing up.
+
 ## API Endpoints
 
-|  | Endpoint | Request Type | Description |
+| Resource | POST | GET | DELETE |
 | ----------- | ----------- | ----------- | ----------- |
-| `auth` | `/auth/signup/` | POST | Create a new user with any of the following roles - `user`, `manager`, `admin` | |
-| `auth` | `/auth/login/` | POST | Login with valid credentials |
-| `calories` | `/calories/entry/` | POST | Enter a new food with valid calorie. If calorie is not provided, the calorie is automatically taken from the nutritionix api. |
-| `calories` | `/calories/entry/{food-id}` | DELETE | Delete the food entered previously based on the `food-id` given |
-| `calories` | `/calories/list/` | GET | Get the list of food consumed by you |
-| `calories` | `/calories/goal/` | POST | Set the daily calorie goal. |
-| `calories` | `/calories/goal/` | GET | Set the daily calorie goal. |
-| `admin` | `/admin/delete/{username}/` | DELETE | [ADMIN ONLY] Delete any user based on `username` given |
+| `/auth/signup/` | Create a new user with any of the following roles - `user`, `manager`, `admin` | - | - |
+| `/auth/login/` | Login with `username` and `password` | - | - |
+| `/auth/logout/` | Logs out and deletes the session | - | - |
+| `/calories/entry/` | Enter a new food with valid calorie. If calorie is not provided, the calorie is automatically taken from the nutritionix api. | - | - |
+| `/calories/entry/{food-id}?username={username}` | - | - | Deletes the food entered before with `food-id` belonging to `username`(optional) |
+| `/calories/list?username={username}&from_date={from_date}&to_date={to_date}` | - | Get the list of food consumed from `from_date` to `to_date` by `username`. All the params are optional, by-default the list is shown on daily basis by looged-in user.  | - |
+| `/calories/goal/` | sets the calorie goal for the day. | - | - |
+| `/calories/goal?username={username}&from_date={from_date}&to_date={to_date}&params=status` | - | Shows the calorie goal summed up from `from-date` to `to-date` of `username`. `params=status` just shows whether you have fulfilled the goal or not. | - |
+| `/admin/delete/{username}` | - | - | Removes the user data (Admin only) | 
 
 ## 🚀 Installation
 
