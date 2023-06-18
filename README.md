@@ -17,7 +17,7 @@ A rest API to manage calories consumed by users, written in Python.
 ## 🪛 Libraries / Tools Used
 - [FastAPI](fastapi.tiangolo.com/) - for creating REST APIs
 - SQLite - for storing user data and login sessions
-- Pytest - for unit testing
+- [Pytest](https://pytest.org) and [Playwright](https://playwright.dev/) - for testing
 - Black and flake8 - for linting
 
 ## 🌟 Features
@@ -266,58 +266,29 @@ uvicorn main:app --reload
 ```
 
 ## 📃 Directory
-
-<details>
-<summary>The directory looks like</summary>
-
 ```
-├── auth : contains jwt and password related operations
-│   ├── __init__.py
-│   ├── jwt.py
-│   ├── password.py
-│   └── status.py
-├── calories.db : main db file
-├── db : contains all database related operations
-│   ├── auth.py
-│   ├── __init__.py
-│   ├── models.py
-│   ├── operations.p
-├── main.py : contains fastAPI endpoints
-├── README.md
-├── requirements.txt
-├── routes : contains all the routes
-│   ├── admin.py
-│   ├── auth.py
-│   ├── calories.py
-├── schemas : schemas defined for response and request type
-│   ├── auth.py
-│   ├── calories.py
-│   ├── __init__.py
-├── secrets.cfg : config file for jwt and nutritionix api key
-├── tests : testing environment
-│   ├── e2e
-│   │   └── demo.py
-│   └── unit
-│       ├── test_jwt_operations.py
-│       ├── test_password_operations.py
-│       └── test_table_operations.py
-└── utilities : other miscellaneous functions
-    ├── check_goal.py
-    ├── current_date_time.py
-    ├── get_calories.py
-    ├── __init__.py
-    └── roles.py
+├── auth/
+├── db/
+├── routes/
+├── schemas/
+├── tests/
+│   ├── e2e/
+│   └── unit/
+└── utilities/
 ```
-
-</details>
-
 
 ## 🧪 Testing
+
+- Install a dependency for pytest plugin for playwright
+
+```bash
+pip install pytest-playwright
+```
 
 - To run all the unit tests, run the following command
 
 ```bash
-python -m pytest tests/unit
+python -m pytest tests/
 ```
 
 - All the tests are written with the convention `test_<function_name>.py` and the functions as `test_<function_name>`.
@@ -330,3 +301,4 @@ python -m pytest tests/unit
 - [For writing basic unit tests](https://www.freecodecamp.org/news/how-to-write-unit-tests-for-python-functions/)
 - [Had a hard time figuring out why nutritionix api is not working](https://stackoverflow.com/questions/76465149/getting-401-unauthorized-status-in-an-api)
 - [Used SQLAlchemy for the first time](https://docs.sqlalchemy.org/en/20/)
+- [Got an idea how to write tests in playwright](https://playwright.dev/python/docs/api-testing)
