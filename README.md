@@ -18,7 +18,7 @@ A rest API to manage calories consumed by users, written in Python.
 - [FastAPI](fastapi.tiangolo.com/) - for creating REST APIs
 - SQLite - for storing user data and login sessions
 - [Pytest](https://pytest.org) and [Playwright](https://playwright.dev/) - for testing
-- Black and flake8 - for linting
+- Black - for reformatting
 
 ## 🌟 Features
 
